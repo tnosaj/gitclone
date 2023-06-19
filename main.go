@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 	if len(args) != 1 {
-		log.Fatal("One argument is required")
+		log.Fatal("One argument is required: \n -g for go repos")
 	}
 
 	repo := args[0]
@@ -40,13 +40,16 @@ func main() {
 	directory := strings.Join(path, "/")
 	directory = strings.TrimSuffix(directory, ".git")
 	var cmd *exec.Cmd
-	if _, err := os.Stat("/path/to/whatever"); os.IsNotExist(err) {
+	if _, err := os.Stat(directory); os.IsNotExist(err) {
+		fmt.Println("creating directory; then pulling")
+		os.MkdirAll(directory, os.ModePerm)
+		cmd = exec.Command("git", "clone", repo, directory)
+
+	} else {
+		fmt.Println("directory exists; git pulling")
 		cmd = exec.Command("git", "pull")
 		cmd.Dir = directory
 
-	} else {
-		os.MkdirAll(directory, os.ModePerm)
-		cmd = exec.Command("git", "clone", repo, directory)
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
